@@ -1,0 +1,263 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API to add, modify and delete tennis court reservations. The software shall decide if lighting is needed for a particular reservation. The API can handle single reservations only (no recurring events).",
+    "version": "0.9.0",
+    "title": "LED Lighting API (REST/JSON)",
+    "termsOfService": "http://www.sport-technologies.nl/terms/",
+    "contact": {
+      "email": "support@sport-technologies.nl",
+      "name": "Jaap Mulder"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "sport-technologies.nl",
+  "basePath": "/v1",
+  "tags": [
+    {
+      "name": "reservation",
+      "description": "Reservation API"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "paths": {
+    "/reservation": {
+      "post": {
+        "tags": [
+          "reservation"
+        ],
+        "summary": "Add a new reservation",
+        "description": "",
+        "operationId": "addReservation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New reservation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Reservation"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Reservation successful"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/reservation/{reservationId}": {
+      "put": {
+        "tags": [
+          "reservation"
+        ],
+        "summary": "Update an existing reservation",
+        "description": "",
+        "operationId": "updateReservation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "description": "ID of reservation to be changed",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Reservation change content",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Reservation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reservation change successful"
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Reservation not found"
+          },
+          "405": {
+            "description": "Validation exception"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "reservation"
+        ],
+        "summary": "Cancel a reservation",
+        "description": "",
+        "operationId": "deleteReservation",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "reservationId",
+            "in": "path",
+            "description": "Reservation id to delete",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reservation successfully cancelled"
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Reservation not found"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "reservation"
+        ],
+        "summary": "Find reservation by ID",
+        "description": "Returns a single reservation",
+        "operationId": "getReservationById",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "description": "ID of the reservation to return",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete successful",
+            "schema": {
+              "$ref": "#/definitions/Reservation"
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Reservation not found"
+          }
+        },
+        "deprecated": true
+      }
+    }
+  },
+  "securityDefinitions": {
+    "basicAuth": {
+      "type": "basic"
+    }
+  },
+  "definitions": {
+    "DateRange": {
+      "type": "object",
+      "properties": {
+        "startDateTime": {
+          "type": "string",
+          "description": "Timestamp to indicate the start of a reservation",
+          "example": "2018-08-23T22:00:00+0200"
+        },
+        "endDateTime": {
+          "type": "string",
+          "description": "Timestamp to indicate the end of a reservation",
+          "example": "2018-08-23T22:59:59+0200"
+        }
+      }
+    },
+    "Reservation": {
+      "type": "object",
+      "required": [
+        "reservationId",
+        "clubId",
+        "courtNr",
+        "period"
+      ],
+      "properties": {
+        "transactionId": {
+          "type": "string",
+          "description": "Unique Id of the transaction (for logging and debugging purposes",
+          "example": "4f2a5ca5-84ab-464e-9f0b-fc14f666a539"
+        },
+        "reservationId": {
+          "type": "string",
+          "description": "Unique Id of the reservation.",
+          "example": "4392"
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Unique Id of the club. The format is a character string consisting of numbers (can have preceeding 0s)",
+          "example": "0024332"
+        },
+        "courtNr": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Court number (an integer number)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of the reservation",
+          "default": "normal",
+          "enum": [
+            "normal",
+            "training",
+            "groundsman",
+            "tournament",
+            "competition",
+            "racketmix",
+            "unavailable",
+            "rent",
+            "other"
+          ]
+        },
+        "period": {
+          "$ref": "#/definitions/DateRange"
+        }
+      }
+    }
+  }
+}
