@@ -1,187 +1,315 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
-  description: >-
-    API to add, modify and delete tennis court reservations. The software shall
-    decide if lighting is needed for a particular reservation. The API can
-    handle single reservations only (no recurring events).
-  version: 0.9.0
-  title: LED Lighting API (REST/JSON)
-  termsOfService: 'http://www.sport-technologies.nl/terms/'
+  description: "API to add, modify and delete tennis court reservations. The software shall decide if lighting is needed for a particular reservation. The API can handle single reservations only (no recurring events)."
+  version: "0.9.1"
+  title: "LED Lighting API (REST/JSON)"
+  termsOfService: "http://www.sport-technologies.nl/terms/"
   contact:
-    email: support@sport-technologies.nl
-    name: Jaap Mulder
+    email: "support@sport-technologies.nl"
+    name: "Jaap Mulder"
   license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-host: sport-technologies.nl
-basePath: /v1
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "us-central1-sport-technologies-test.cloudfunctions.net"
+basePath: "/api/"
 tags:
-  - name: reservation
-    description: Reservation API
+- name: "reservations"
+  description: "Reservations API"
 schemes:
-  - http
-security:
-  - basicAuth: []
+- "https"
+# Apply Basic Authentication to the whole API:
+
 paths:
-  /reservation:
+  /login:
     post:
       tags:
-        - reservation
-      summary: Add a new reservation
-      description: ''
-      operationId: addReservation
+      - "login"
+      summary: "Login and return access token"
+      description: "Returns a login token and refreshToken. The refreshToken is used to obtain a new login token when it is expired. A token expires after 3600 seconds (1 hour)."
+      operationId: "login"
       consumes:
-        - application/json
+      - "application/json"
       produces:
-        - application/json
+      - "application/json"
       parameters:
-        - in: body
-          name: body
-          description: New reservation
-          required: true
-          schema:
-            $ref: '#/definitions/Reservation'
+      - in: "body"
+        name: "credentials"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/Credentials"
       responses:
-        '201':
-          description: Reservation successful
-        '405':
-          description: Invalid input
-  '/reservation/{reservationId}':
+        200:
+          description: "Login token and refresh token are returned"
+          schema:
+              $ref: "#/definitions/Token"
+        400:
+          description: "Invalid request"
+        403:
+          description: "Not authorized"
+  /refresh_token:
+    post:
+      tags:
+      - "login"
+      summary: "Refresh login token"
+      description: "Returns a login token that is valid again for 3600 seconds (1 hour)."
+      operationId: "refresh_token"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "refresh_token"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/Refresh_token"
+      responses:
+        200:
+          description: "Login token and refresh token are returned"
+          schema:
+              $ref: "#/definitions/Token"
+        400:
+          description: "Invalid request"
+        403:
+          description: "Invalid refresh token"    
+  /tenants/{tenantId}/reservations/{reservationId}:
+    post:
+      security:
+        - Bearer: []
+      tags:
+      - "reservations"
+      summary: "Add a reservation"
+      description: ""
+      operationId: "addReservation"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenantId"
+        in: "path"
+        description: "ID of the tenant"
+        required: true
+        type: "string"
+      - name: "reservationId"
+        in: "path"
+        description: "Unique ID of the reservation"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "New reservation"
+        required: true
+        schema:
+          $ref: "#/definitions/Reservation"
+      responses:
+        201:
+          description: "Reservation successful"
+        400:
+          description: "Invalid request"
+        403:
+          description: "Not authorized"
     put:
       tags:
-        - reservation
-      summary: Update an existing reservation
-      description: ''
-      operationId: updateReservation
+      - "reservations"
+      summary: "Update an existing reservation"
+      description: ""
+      operationId: "updateReservation"
       consumes:
-        - application/json
+      - "application/json"
       produces:
-        - application/json
+      - "application/json"
       parameters:
-        - name: reservationId
-          in: path
-          description: ID of reservation to be changed
-          required: true
-          type: string
-        - in: body
-          name: body
-          description: Reservation change content
-          required: true
-          schema:
-            $ref: '#/definitions/Reservation'
+      - name: "tenantId"
+        in: "path"
+        description: "ID of the tenant"
+        required: true
+        type: "string"
+      - name: "reservationId"
+        in: "path"
+        description: "ID of reservation to be changed"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Reservation change content"
+        required: true
+        schema:
+          $ref: "#/definitions/Reservation"
       responses:
-        '200':
-          description: Reservation change successful
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Reservation not found
-        '405':
-          description: Validation exception
+        200:
+          description: "Reservation changed successfully"
+        400:
+          description: "Invalid request"
+        403:
+          description: "Not authorizied"
     delete:
       tags:
-        - reservation
-      summary: Cancel a reservation
-      description: ''
-      operationId: deleteReservation
+      - "reservations"
+      summary: "Cancel a reservation"
+      description: ""
+      operationId: "deleteReservation"
       produces:
-        - application/json
+      - "application/json"
       parameters:
-        - name: api_key
-          in: header
-          required: false
-          type: string
-        - name: reservationId
-          in: path
-          description: Reservation id to delete
-          required: true
-          type: integer
-          format: int64
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "tenantId"
+        in: "path"
+        description: "ID of the tenant"
+        required: true
+        type: "string"
+      - name: "reservationId"
+        in: "path"
+        description: "Reservation id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
       responses:
-        '200':
-          description: Reservation successfully cancelled
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Reservation not found
+        200:
+          description: "Reservation successfully cancelled"
+        400:
+          description: "Invalid request"
+        403:
+          description: "Not authorized"
+        404:
+          description: "Reservation not found"
     get:
       tags:
-        - reservation
-      summary: Find reservation by ID
-      description: Returns a single reservation
-      operationId: getReservationById
+      - "reservations"
+      summary: "List an existing reservation"
+      description: ""
+      operationId: "listReservation"
       produces:
-        - application/json
+      - "application/json"
       parameters:
-        - name: reservationId
-          in: path
-          description: ID of the reservation to return
-          required: true
-          type: string
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "tenantId"
+        in: "path"
+        description: "ID of the tenant"
+        required: true
+        type: "string"
+      - name: "reservationId"
+        in: "path"
+        description: "Reservation id to get"
+        required: true
+        type: "integer"
+        format: "int64"
       responses:
-        '200':
-          description: Delete successful
+        200:
+          description: "Reservation successfully returned"
+        400:
+          description: "Invalid request"
+        403:
+          description: "Not authorized"
+        404:
+          description: "Reservation not found"
+  /tenants/{tenantId}/reservations:
+    get:
+      tags:
+      - "reservations"
+      summary: "List all reservations or an empty list if no reservations are present"
+      description: "Returns all reservations for a tenant"
+      operationId: "getReservationsForTenantId"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenantId"
+        in: "path"
+        description: "ID of the tenant for which reservations will be listed"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful"
           schema:
-            $ref: '#/definitions/Reservation'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Reservation not found
+            $ref: "#/definitions/Reservation"
+        400:
+          description: "Invalid inputs"
+        403:
+          description: "Not authorized"
       deprecated: true
 securityDefinitions:
-  basicAuth:
-    type: basic
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
 definitions:
   DateRange:
-    type: object
+    type: "object"
     properties:
       startDateTime:
-        type: string
-        description: Timestamp to indicate the start of a reservation
-        example: '2018-08-23T22:00:00+0200'
+        type: "string"
+        description: "Timestamp to indicate the start of a reservation. Shall be in UTC or with the addition of the timezone (take care of daylight saving time yourself!)"
+        example: "2018-08-23T22:00:00+0200"
       endDateTime:
-        type: string
-        description: Timestamp to indicate the end of a reservation
-        example: '2018-08-23T22:59:59+0200'
+        type: "string"
+        description: "Timestamp to indicate the end of a reservation. Shall be in UTC or with the addition of the timezone (take care of daylight saving time yourself!)"
+        example: "2018-08-23T22:59:59+0200"
   Reservation:
-    type: object
+    type: "object"
     required:
-      - reservationId
-      - clubId
-      - courtNr
-      - period
+    - "courtNr"
+    - "period"
     properties:
       transactionId:
-        type: string
-        description: Unique Id of the transaction (for logging and debugging purposes
-        example: 4f2a5ca5-84ab-464e-9f0b-fc14f666a539
-      reservationId:
-        type: string
-        description: Unique Id of the reservation.
-        example: '4392'
-      clubId:
-        type: string
-        description: >-
-          Unique Id of the club. The format is a character string consisting of
-          numbers (can have preceeding 0s)
-        example: '0024332'
+        type: "string"
+        description: "Unique Id of the transaction (for logging and debugging purposes"
+        example: "4f2a5ca5-84ab-464e-9f0b-fc14f666a539"
       courtNr:
-        type: integer
-        format: int32
-        description: Court number (an integer number)
+        type: "integer"
+        format: "int32"
+        description: "Court number (an integer number)"
       type:
-        type: string
-        description: Type of the reservation
-        default: normal
+        type: "string"
+        description: "Type of the reservation"
+        default: "normal"
         enum:
-          - normal
-          - training
-          - groundsman
-          - tournament
-          - competition
-          - racketmix
-          - unavailable
-          - rent
-          - other
+        - "normal"
+        - "training"
+        - "groundsman"
+        - "tournament"
+        - "competition"
+        - "racketmix"
+        - "unavailable"
+        - "rent"
+        - "other"
       period:
-        $ref: '#/definitions/DateRange'
+        $ref: "#/definitions/DateRange"
+  Credentials:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        description: "Unique email address of the tenant"
+        example: "apiuser@tennisclub.nl"
+      password:
+        type: "string"
+        description: "The tenant's password"
+  Token:
+    type: "object"
+    properties:
+      loginToken:
+        type: "string"
+        description: "Bearer token to be used in HTTP header: Authorization: Bearer <loginToken>"
+      refreshToken:
+        type: "string"
+        description: "Token to be used to refresh login token"
+      expiresIn:
+        type: "integer"
+        description: "Token expiration time in seconds (cannot be changed)"
+        example: 3600
+  Refresh_token:
+    type: "object"
+    properties:
+      refreshToken:
+        type: "string"
+        description: "Token to be used to refresh login token"
+
