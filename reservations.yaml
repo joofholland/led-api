@@ -1,10 +1,10 @@
 swagger: '2.0'
 info:
-  description: >-
-    API to add, modify and delete tennis court reservations. The software shall
+  description:
+    API to add, modify and delete tennis court reservations in the SPORT Technologies backend (https://www.sport-technologies.nl). The software shall
     decide if lighting is needed for a particular reservation. The API can
     handle single reservations only (no recurring events).
-  version: 0.9.2
+  version: 0.9.3
   title: LED Lighting API (REST/JSON)
   termsOfService: 'http://www.sport-technologies.nl/terms/'
   contact:
@@ -250,19 +250,18 @@ securityDefinitions:
 definitions:
   DateRange:
     type: object
+    description: A period is a date range of at least 15 minutes. If it is less than that, the validation will return a 400 error.
     properties:
       startDateTime:
         type: string
-        description: >-
+        description:
           Timestamp to indicate the start of a reservation. Shall be in UTC or
           with the addition of the timezone (take care of daylight saving time
           yourself!)
         example: '2018-08-23T22:00:00+0200'
       endDateTime:
         type: string
-        description: >-
-          Timestamp to indicate the end of a reservation. Shall be in UTC or
-          with the addition of the timezone (take care of daylight saving time
+        description: Timestamp to indicate the end of a reservation. Shall be in UTC or with the addition of the timezone (take care of daylight saving time
           yourself!)
         example: '2018-08-23T22:59:59+0200'
   Reservation:
@@ -281,7 +280,7 @@ definitions:
         description: Court number (an integer number)
       type:
         type: string
-        description: Type of the reservation
+        description: Type of the reservation. If the type of the reservation is not valid, it will be corrected to 'normal'
         default: normal
         enum:
           - normal
@@ -309,9 +308,7 @@ definitions:
     properties:
       loginToken:
         type: string
-        description: >-
-          Bearer token to be used in HTTP header: Authorization: Bearer
-          <loginToken>
+        description: Bearer token to be used in HTTP header
       refreshToken:
         type: string
         description: Token to be used to refresh login token
