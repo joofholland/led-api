@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "description": "API to add, modify and delete tennis court reservations. The software shall decide if lighting is needed for a particular reservation. The API can handle single reservations only (no recurring events).",
-    "version": "0.9.1",
+    "version": "0.9.2",
     "title": "LED Lighting API (REST/JSON)",
     "termsOfService": "http://www.sport-technologies.nl/terms/",
     "contact": {
@@ -20,6 +20,10 @@
     {
       "name": "reservations",
       "description": "Reservations API"
+    },
+    {
+      "name": "login",
+      "description": "OAuth 2.0 login token API"
     }
   ],
   "schemes": [
@@ -400,7 +404,6 @@
             "tournament",
             "competition",
             "racketmix",
-            "unavailable",
             "rent",
             "other"
           ]
