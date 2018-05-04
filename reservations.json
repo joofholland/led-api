@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "API to add, modify and delete tennis court reservations in the SPORT Technologies backend (https://www.sport-technologies.nl). The software shall decide if lighting is needed for a particular reservation. The API can handle single reservations only (no recurring events).",
-    "version": "0.9.3",
+    "description": "API to add, modify and delete tennis court reservations. The software shall decide if lighting is needed for a particular reservation. The API can handle single reservations only (no recurring events).",
+    "version": "0.9.2",
     "title": "LED Lighting API (REST/JSON)",
     "termsOfService": "http://www.sport-technologies.nl/terms/",
     "contact": {
@@ -363,7 +363,6 @@
   "definitions": {
     "DateRange": {
       "type": "object",
-      "description": "A period is a date range of at least 15 minutes. If it is less than that, the validation will return a 400 error.",
       "properties": {
         "startDateTime": {
           "type": "string",
@@ -396,7 +395,7 @@
         },
         "type": {
           "type": "string",
-          "description": "Type of the reservation. If the type of the reservation is not valid, it will be corrected to 'normal'",
+          "description": "Type of the reservation",
           "default": "normal",
           "enum": [
             "normal",
@@ -433,7 +432,7 @@
       "properties": {
         "loginToken": {
           "type": "string",
-          "description": "Bearer token to be used in HTTP header"
+          "description": "Bearer token to be used in HTTP header: Authorization: Bearer <loginToken>"
         },
         "refreshToken": {
           "type": "string",
